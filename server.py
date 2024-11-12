@@ -16,7 +16,7 @@ def get_deadline_by_title(title):
     # Search for the task with the specified title
     for task in tasks:
         if task['title'].lower() == title.lower():
-            return jsonify({"title": task['title'], "deadline": task['deadline']})
+            return f"{title} if due {task['deadline']}"
     # If task not found, return a 404 error
     return jsonify({"error": "Task not found"}), 404
 @app.route('/')
