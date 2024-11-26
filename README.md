@@ -4,6 +4,7 @@
 ## Description
 
 Task-tracker, which can automaticly add deadlines to the calendar, tracking them from external platforms (Congniterra, GitHub Classroom)
+flask-project-yashchenkobv-production-0ec4.up.railway.app
 
 ## Setup
 
