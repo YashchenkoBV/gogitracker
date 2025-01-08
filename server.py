@@ -1,24 +1,45 @@
-from flask import Flask, jsonify
-import json
+from flask import Flask, request, render_template, redirect, url_for, session, jsonify
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='templates')
 
-# Helper function to load tasks from JSON file
-def load_tasks():
-    with open('tasks.json') as file:
-        return json.load(file)
+# In-memory storage for demonstration purposes
+users = {}
 
-
-# Route to get the deadline by task title
-@app.route('/deadline/<title>', methods=['GET'])
-def get_deadline_by_title(title):
-    tasks = load_tasks()
-    # Search for the task with the specified title
-    for task in tasks:
-        if task['title'].lower() == title.lower():
-            return f"{title} if due {task['deadline']}"
-    # If task not found, return a 404 error
-    return jsonify({"error": "Task not found"}), 404
 @app.route('/')
 def home():
-    return 'Task tracker'
+    return render_template('home.html')
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'GET':
+        # Render the signup template
+        return render_template('signup.html')
+    elif request.method == 'POST':
+        # Handle form submission
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        if username in users:
+            return jsonify({'error': 'User already exists!'}), 400
+        else:
+            users[username] = password
+            return jsonify({'message': 'User created successfully!'})
+
+@app.route('/signin', methods=['GET', 'POST'])
+def signin():
+    if request.method == 'GET':
+        # Render the signin template
+        return render_template('signin.html')
+    elif request.method == 'POST':
+        # Handle form submission
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        if username in users and users[username] == password:
+            session['username'] = username
+            return jsonify({'message': f'Welcome, {username}!'})
+        else:
+            return jsonify({'error': 'Invalid username or password!'}), 401
+
+if __name__ == '__main__':
+    app.run(debug=True)
