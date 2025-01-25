@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>GoGiTracker - Calendar</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Calibri, sans-serif;
+      background-color: #f5f5f5;
+    }
+
+    /* Top bar */
+    .top-bar {
+      background-color: green;
+      color: white;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .top-bar .logo {
+      font-weight: bold;
+      font-size: 1.25rem;
+    }
+
+    /* Navigation buttons on top bar (Sign In, Sign Up, etc.) */
+    .nav-buttons {
+      display: flex;
+      gap: 1rem;
+    }
+    .nav-button {
+      color: white;
+      background: none;
+      border: none;
+      padding: 0;
+      font-size: 1rem;
+      cursor: pointer;
+      text-decoration: none;
+      height: 100%;
+      display: flex;
+      align-items: center;
+    }
+    .nav-button:hover {
+      background-color: #006400; /* Darker green */
+    }
+
+    /* Calendar container */
+    .calendar-container {
+      background-color: white;
+      margin: 2rem auto;
+      padding: 1rem;
+      width: 600px; /* Adjust to your preference */
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Month navigation */
+    .month-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      font-size: 1.25rem;
+    }
+    .month-nav .arrow {
+      padding: 0 1rem;
+      cursor: pointer;
+      user-select: none;
+    }
+    .month-nav .arrow a {
+      color: inherit; /* inherit from parent color (likely black or green) */
+      text-decoration: none;
+    }
+    .month-nav .arrow:hover {
+      background-color: #eee;
+    }
+    .month-year {
+      font-weight: bold;
+    }
+
+    /* Day names row (Mon, Tue, etc.) */
+    .day-names {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      font-weight: bold;
+      border-bottom: 1px solid #ddd;
+      margin-bottom: 0.5rem;
+    }
+    .day-name {
+      padding: 0.5rem 0;
+      background-color: #fafafa;
+    }
+
+    /* Calendar grid for weeks & days */
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+    }
+    .calendar-cell {
+      min-height: 80px; /* Adjust the cell height if you like */
+      border: 1px solid #ddd;
+      position: relative;
+      transition: background-color 0.3s ease;
+    }
+
+    /* Disabled (non-interactable) cells for days not in the current month */
+    .disabled-cell {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+    .calendar-cell:hover:not(.disabled-cell) {
+      background-color: #f0f0f0;
+    }
+
+    .date-num {
+      color: gray;
+      font-size: 0.9rem;
+      position: absolute;
+      top: 5px;
+      left: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top bar -->
+  <div class="top-bar">
+    <div class="logo">GoGiTracker</div>
+    <div class="nav-buttons">
+      {% if not current_user %}
+        <!-- User is NOT logged in -> show Sign In / Sign Up -->
+        <a class="nav-button" href="{{ url_for('login') }}">Sign In</a>
+        <a class="nav-button" href="{{ url_for('signup') }}">Sign Up</a>
+      {% else %}
+        <!-- User is logged in -> show Sign Out -->
+        <a class="nav-button" href="{{ url_for('logout') }}">Sign Out</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Calendar container -->
+  <div class="calendar-container">
+
+    <!-- Month navigation (using query params to navigate) -->
+    <div class="month-nav">
+      <!-- Link to previous month -->
+      <div class="arrow">
+        <a href="/?year={{ year if month>1 else year-1 }}&month={{ month-1 if month>1 else 12 }}">&larr;</a>
+      </div>
+
+      <div class="month-year">{{ month_name }} {{ year }}</div>
+
+      <!-- Link to next month -->
+      <div class="arrow">
+        <a href="/?year={{ year if month<12 else year+1 }}&month={{ month+1 if month<12 else 1 }}">&rarr;</a>
+      </div>
+    </div>
+
+    <!-- Day names row -->
+    <div class="day-names">
+      <div class="day-name">Mon</div>
+      <div class="day-name">Tue</div>
+      <div class="day-name">Wed</div>
+      <div class="day-name">Thu</div>
+      <div class="day-name">Fri</div>
+      <div class="day-name">Sat</div>
+      <div class="day-name">Sun</div>
+    </div>
+
+    <!-- Calendar grid -->
+    <div class="calendar-grid">
+      {% for week in month_days %}
+        {% for day in week %}
+          {% if day == 0 %}
+            <div class="calendar-cell disabled-cell">
+              <div class="date-num"></div>
+            </div>
+          {% else %}
+            <div class="calendar-cell">
+              <div class="date-num">{{ day }}</div>
+              <!-- We can display tasks or events here if user is logged in -->
+            </div>
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+    </div>
+  </div>
+
+</body>
+</html>
