@@ -71,7 +71,19 @@ def signup():
         # Check if username is already taken
         existing_user = User.query.filter_by(username=username).first()
         if existing_user:
-            return "Username already exists. Please choose another one.", 400
+            return render_template(
+                'signup.html',
+                current_user=current_user(),
+                error_message="This username is already taken"
+            )
+
+        # Validate password
+        if len(password) < 8:
+            return render_template(
+                'signup.html',
+                current_user=current_user(),
+                error_message="Incorrect password format - must be at least 8 characters"
+            )
 
         # Hash the password and create a new user
         hashed_password = generate_password_hash(password)
@@ -85,6 +97,7 @@ def signup():
 
     return render_template('signup.html', current_user=current_user())
 
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     """
@@ -96,13 +109,19 @@ def login():
         password = request.form.get('password')
 
         user = User.query.filter_by(username=username).first()
-        if user and check_password_hash(user.password_hash, password):
-            session['user_id'] = user.id
-            return redirect(url_for('index'))
-        else:
-            return "Invalid username or password.", 400
+        if not user or not check_password_hash(user.password_hash, password):
+            return render_template(
+                'login.html',
+                current_user=current_user(),
+                error_message="Invalid username or password"
+            )
+
+        # Log in the user
+        session['user_id'] = user.id
+        return redirect(url_for('index'))
 
     return render_template('login.html', current_user=current_user())
+
 
 @app.route('/logout')
 def logout():
