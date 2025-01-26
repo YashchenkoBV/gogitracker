@@ -13,7 +13,6 @@
             height: 100vh;
         }
 
-        /* Top bar */
         .top-bar {
             background-color: green;
             color: white;
@@ -25,7 +24,7 @@
 
         .top-bar .logo {
             font-weight: bold;
-            font-size: 1.25rem;
+            font-size: 1.5rem;
         }
 
         .content {
@@ -44,40 +43,38 @@
         }
 
         .error-message {
-            width: calc(100% - 2px); /* Match input field and button width */
-            padding: 0.75rem; /* Add balanced padding */
+            width: calc(100% - 2px);
+            padding: 0.75rem;
             margin-bottom: 1rem;
-            background-color: #cc0000; /* Darker red */
-            color: white; /* High contrast for readability */
+            background-color: #cc0000;
+            color: white;
             font-weight: bold;
             font-size: 1rem;
-            border: 1px solid #990000; /* Even darker border for depth */
-            text-align: left; /* Align with input fields */
-            box-sizing: border-box; /* Ensure proper width calculation */
+            border: 1px solid #990000;
+            text-align: left;
+            box-sizing: border-box;
         }
-
 
         .form-container h2 {
             margin-bottom: 1rem;
         }
 
         .input-field {
-            width: calc(100% - 2px); /* Match the button width including borders */
+            width: calc(100% - 2px);
             padding: 0.5rem;
             margin-bottom: 1rem;
             border: 1px solid #ccc;
-            box-sizing: border-box; /* Ensure proper box sizing for accurate width */
+            box-sizing: border-box;
         }
 
-
         .btn-submit {
-            width: calc(100% - 2px); /* Match input field width including borders */
+            width: calc(100% - 2px);
             background-color: green;
             color: white;
             border: none;
             padding: 0.75rem;
             cursor: pointer;
-            box-sizing: border-box; /* Ensure proper box sizing for accurate width */
+            box-sizing: border-box;
         }
 
         .btn-submit:hover {
@@ -91,20 +88,16 @@
     </style>
 </head>
 <body>
-
-<!-- Top bar -->
 <div class="top-bar">
     <div class="logo">GoGiTracker</div>
 </div>
 
-<!-- Main content area -->
 <div class="content">
     <div class="form-container">
         <h2>Sign Up</h2>
 
-        <!-- Error message block -->
         {% if error_message %}
-            <div class="error-message">{{ error_message }}</div>
+        <div class="error-message">{{ error_message }}</div>
         {% endif %}
 
         <form method="POST" action="{{ url_for('signup') }}">
@@ -119,6 +112,5 @@
         </div>
     </div>
 </div>
-
 </body>
 </html>

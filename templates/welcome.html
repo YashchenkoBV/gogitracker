@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome to GoGiTracker</title>
+    <style>
+        body {
+            font-family: Calibri, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .welcome-container {
+            text-align: center;
+            background-color: white;
+            padding: 2rem;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: green;
+        }
+
+        .nav-buttons {
+            margin-top: 1rem;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .nav-button {
+            padding: 0.75rem 1.5rem;
+            background-color: green;
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
+
+        .nav-button:hover {
+            background-color: #006400;
+        }
+    </style>
+</head>
+<body>
+<div class="top-bar">
+    <div class="logo">GoGiTracker</div>
+</div>
+
+<div class="welcome-container">
+    <h1>Welcome to GoGiTracker</h1>
+    <p>To access the calendar and manage your tasks, please sign up or log in.</p>
+    <div class="nav-buttons">
+        <a class="nav-button" href="{{ url_for('login') }}">Sign In</a>
+        <a class="nav-button" href="{{ url_for('signup') }}">Sign Up</a>
+    </div>
+</div>
+</body>
+
+</html>
