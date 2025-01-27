@@ -36,5 +36,9 @@ main?
 Describe the criteria by which the success of the project can be determined
 (this will be updated in the future)
 
-* New deadlines are automaticly added to the calendar in the web-application when they are updated on external platforms.
+* Linking assignments to particular dates and viewing them in the calendar grid
+* Showing most urgent tasks
+* Tasks can have different statuses ("In progress" or "Done")
+* Ability lo link an external platfrom (namely, GitHub) and add assignments from there
+* Storing data for different users
 
