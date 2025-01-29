@@ -9,9 +9,23 @@
             background-color: #f5f5f5;
             margin: 0;
             display: flex;
-            justify-content: center;
-            align-items: center;
+            flex-direction: column;
             height: 100vh;
+        }
+
+        .top-bar {
+            background-color: green;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 4rem;
+            padding: 0 1rem;
+        }
+
+        .top-bar .logo {
+            font-weight: bold;
+            font-size: 1.5rem;
         }
 
         .welcome-container {
@@ -19,6 +33,10 @@
             background-color: white;
             padding: 2rem;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: auto;
+            width: 80%;
+            max-width: 400px;
+            border-radius: 8px;
         }
 
         h1 {
@@ -40,6 +58,7 @@
             font-weight: bold;
             border: none;
             cursor: pointer;
+            border-radius: 4px;
         }
 
         .nav-button:hover {
@@ -61,5 +80,4 @@
     </div>
 </div>
 </body>
-
 </html>

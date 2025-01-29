@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8"/>
+    <meta charset="UTF-8">
     <title>GoGiTracker - Calendar</title>
     <style>
         body {
@@ -10,50 +10,68 @@
             background-color: #f5f5f5;
         }
 
-        /* Top bar */
         .top-bar {
-            background-color: green;
-            color: white;
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            color: white;
             height: 4rem;
-            padding: 0 1rem;
+            width: 100%;
+            background-color: green; /* Add green background */
+            padding: 0;
         }
+
+
+        .nav-buttons {
+            display: flex;
+            flex-grow: 1;
+            justify-content: flex-end;
+        }
+
+        .nav-button {
+            text-decoration: none;
+            color: white;
+            background-color: green;
+            border: none;
+            height: 4rem; /* Matches the top bar height */
+            flex-grow: 1; /* Ensures buttons are evenly spaced */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+            max-width: 200px; /* Makes buttons wider */
+        }
+
 
         .logo {
             font-weight: bold;
             font-size: 1.5rem;
-        }
-
-        .nav-button {
-            color: white;
-            text-decoration: none;
-            padding: 0.75rem 1rem;
-            background-color: #006400;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
+            padding-left: 1rem;
         }
 
         .nav-button:hover {
             background-color: #004d00;
         }
 
-        /* Main layout */
+        .nav-buttons a:last-child {
+            margin-right: 0; /* Ensures last button touches the screen border */
+        }
+
         .main-container {
             display: flex;
             gap: 2rem;
             margin: 2rem;
         }
 
-        /* Calendar container */
         .calendar-container {
             flex: 2;
             background-color: white;
             padding: 1rem;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             border-radius: 4px;
+            max-height: 600px;
+            overflow: hidden;
         }
 
         .month-nav {
@@ -76,11 +94,11 @@
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 2px;
+            gap: 5px;
         }
 
         .calendar-cell {
-            min-height: 80px; /* Adjusted for better visual proportions */
+            min-height: 80px;
             border: 1px solid #ddd;
             position: relative;
             transition: background-color 0.3s ease;
@@ -94,19 +112,23 @@
         }
 
         .calendar-cell.past-date {
-            background-color: #f8d7da; /* Light pink for past dates */
+            background-color: #f8d7da; /* Светло-розовый для прошедших дат */
         }
 
         .calendar-cell.past-date:hover {
-            background-color: #e898a2; /* Darker pink on hover */
+            background-color: #e898a2; /* Более насыщенный розовый при наведении */
         }
 
         .calendar-cell.other-month {
-            background-color: #696969; /* Dark gray for non-current month dates */
+            background-color: #696969; /* Темно-серый для дат другого месяца */
+        }
+
+        .calendar-cell.other-month:hover {
+            background-color: #404040; /* Темнее при наведении */
         }
 
         .calendar-cell:hover {
-            background-color: #e8e8e8; /* Light gray for general hover */
+            background-color: #e8e8e8; /* Светло-серый при наведении (для текущего месяца) */
         }
 
         .date-num {
@@ -117,31 +139,39 @@
             left: 5px;
         }
 
-        /* Upcoming tasks */
+        /* Поле Upcoming Tasks */
         .upcoming-tasks {
             flex: 1;
             background-color: white;
-            padding: 1rem;
+            display: flex;
+            flex-direction: column;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             border-radius: 4px;
-            overflow-y: auto;
-            max-height: 500px;
+            max-height: 600px; /* Высота соответствует высоте календарного блока */
         }
 
         .upcoming-tasks h2 {
             color: green;
-            margin-bottom: 1rem;
+            margin: 0;
+            padding: 1rem;
+            background-color: #f5f5f5;
+            border-bottom: 1px solid #ddd;
+            position: sticky;
+            top: 0;
+            z-index: 1;
         }
 
         .upcoming-tasks ul {
             list-style: none;
             padding: 0;
             margin: 0;
+            overflow-y: auto; /* Скролл для списка */
+            flex: 1;
         }
 
         .upcoming-tasks li {
             padding: 0.75rem;
-            margin-bottom: 0.5rem;
+            margin: 0.5rem 1rem;
             background-color: #f9f9f9;
             border: 1px solid #ddd;
             border-radius: 4px;
@@ -157,18 +187,67 @@
             border: none;
             cursor: pointer;
             border-radius: 4px;
+            transition: background-color 0.3s ease;
         }
 
         .finish-button:hover {
             background-color: #004d00;
         }
+
+        .today-date {
+            border: 3px solid red;
+            box-shadow: 0 0 10px rgba(255, 0, 0, 0.6);
+        }
+
+        .task-preview {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 2px;
+            position: absolute;
+            top: 20px;
+            left: 5px;
+            right: 5px;
+            max-height: 65%;
+            overflow: hidden;
+            width: 90%; /* Ensures consistent width */
+        }
+
+        .task-item {
+            background-color: rgba(0, 128, 0, 0.2);
+            border-radius: 4px;
+            padding: 3px 6px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%; /* Ensures all previews have the same width */
+            height: 18px;
+            display: flex;
+            align-items: center;
+        }
+
+        .done-task {
+            background-color: #d3d3d3 !important; /* Grey background */
+            color: black !important; /* Black text */
+        }
+
+
     </style>
 </head>
 <body>
 <div class="top-bar">
     <div class="logo">GoGiTracker</div>
-    <a href="{{ url_for('logout') }}" class="nav-button">Sign Out</a>
+    <div class="nav-buttons">
+        <!-- Toggle button to switch between "Show Done Tasks" and "Show Current Tasks" -->
+        <a href="/?show_done={{ 'false' if show_done_tasks else 'true' }}" class="nav-button">
+            {{ "Show current tasks" if show_done_tasks else "Show done tasks" }}
+        </a>
+        <a href="/link-github" class="nav-button">Link GitHub</a>
+        <a href="{{ url_for('logout') }}" class="nav-button">Sign Out</a>
+    </div>
 </div>
+
 
 <div class="main-container">
     <div class="calendar-container">
@@ -190,19 +269,46 @@
 
         <div class="calendar-grid">
             {% for week in month_days %}
-            {% for day in week %}
-            {% if day == 0 %}
-            <div class="calendar-cell other-month"></div>
-            {% elif is_past(year, month, day) %}
-            <a href="{{ url_for('tasks', year=year, month=month, day=day) }}" class="calendar-cell past-date">
-                <div class="date-num">{{ day }}</div>
-            </a>
-            {% else %}
-            <a href="{{ url_for('tasks', year=year, month=month, day=day) }}" class="calendar-cell">
-                <div class="date-num">{{ day }}</div>
-            </a>
-            {% endif %}
-            {% endfor %}
+                {% for day in week %}
+                    {% if day == 0 %}
+                        <div class="calendar-cell other-month"></div>
+                    {% elif is_past(year, month, day) %}
+                        <a href="{{ url_for('tasks', year=year, month=month, day=day) }}"
+                           class="calendar-cell past-date">
+                            <div class="date-num">{{ day }}</div>
+
+                            <!-- Task previews -->
+                            <div class="task-preview">
+                                {% set task_date = "%04d-%02d-%02d" % (year, month, day) %}
+                                {% if task_date in tasks_by_date %}
+                                    {% for task_text in tasks_by_date[task_date][:3] %}
+                                        <div class="task-item {% if show_done_tasks %}done-task{% endif %}">{{ task_text }}</div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </a>
+
+                    {% else %}
+                        <a href="{{ url_for('tasks', year=year, month=month, day=day) }}"
+                           class="calendar-cell {% if day == now.day and month == now.month and year == now.year %} today-date {% endif %}">
+                            <div class="date-num">{{ day }}</div>
+
+                            <!-- Task previews -->
+                            <div class="task-preview">
+                                {% set task_date = "%04d-%02d-%02d" % (year, month, day) %}
+                                {% if task_date in tasks_by_date %}
+                                    {% for task_text in tasks_by_date[task_date][:3] %}
+                                        <div class="task-item {% if show_done_tasks %}done-task{% endif %}">{{ task_text }}</div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+
+                        </a>
+
+
+
+                    {% endif %}
+                {% endfor %}
             {% endfor %}
         </div>
     </div>
@@ -211,16 +317,50 @@
         <h2>Upcoming Tasks</h2>
         <ul>
             {% for task in upcoming_tasks %}
-            <li>
-                {{ task.date }}: {{ task.task_text }} ({{ task.days_left }} days left)
-                <form method="POST" action="{{ url_for('mark_finished') }}" style="display:inline;">
-                    <input type="hidden" name="task_id" value="{{ task.id }}">
-                    <button type="submit" class="finish-button">Finish</button>
-                </form>
-            </li>
+                <li id="task-{{ task.id }}">
+                    {{ task.date }}: {{ task.task_text }} ({{ task.days_left }} days left)
+                    <form method="POST" action="{{ url_for('mark_finished') }}" style="display:inline;"
+                          onsubmit="fadeOutTask(event, {{ task.id }})">
+                        <input type="hidden" name="task_id" value="{{ task.id }}">
+                        <button type="submit" class="finish-button">Finish</button>
+                    </form>
+                </li>
             {% endfor %}
         </ul>
     </div>
 </div>
+
+<script>
+    function fadeOutTask(event, taskId) {
+        event.preventDefault();
+        let taskElement = document.getElementById("task-" + taskId);
+        taskElement.style.transition = "opacity 0.5s ease-out";
+        taskElement.style.opacity = "0";
+
+        // Preserve month, year, and task mode
+        let urlParams = new URLSearchParams(window.location.search);
+        let year = urlParams.get("year") || new Date().getFullYear();
+        let month = urlParams.get("month") || (new Date().getMonth() + 1);
+        let showDone = urlParams.get("show_done") || "false";
+
+        setTimeout(() => {
+            let form = document.createElement("form");
+            form.method = "POST";
+            form.action = `/mark_finished?year=${year}&month=${month}&show_done=${showDone}`;
+
+            let input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "task_id";
+            input.value = taskId;
+            form.appendChild(input);
+
+            document.body.appendChild(form);
+            form.submit();
+        }, 500);
+    }
+
+</script>
+
+
 </body>
 </html>
