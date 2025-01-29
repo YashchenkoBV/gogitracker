@@ -19,7 +19,7 @@ class SingletonLogger:
             cls._instance.logger.setLevel(logging.DEBUG)  # Set the base logging level
 
             # Create a file handler
-            file_handler = logging.FileHandler("gogitracker.log")
+            file_handler = logging.FileHandler("../gogitracker.log")
             file_handler.setLevel(logging.DEBUG)
 
             # Create a console handler
@@ -43,12 +43,12 @@ class SingletonLogger:
 # Initialize the Singleton Logger
 logger = SingletonLogger().get_logger()
 
-app = Flask(__name__)
-app.config.from_pyfile('keys/config.py')
+app = Flask(__name__, template_folder="../templates")
+app.config.from_pyfile('../keys/config.py')
 app.secret_key = app.config['SECRET_KEY']
 
 # Configure SQLAlchemy (using SQLite for simplicity)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///../users.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -474,6 +474,7 @@ def github_assignments():
                 # README could not be fetched
                 other_projects.append({'name': repo_name, 'url': repo['html_url']})
                 logger.debug(f"Repository '{repo_name}' has no Classroom deadline link.")
+
         except Exception as e:
             # Handle any unexpected errors when processing the repository
             other_projects.append({'name': repo_name, 'url': repo['html_url'], 'error': str(e)})
