@@ -244,10 +244,10 @@
             {{ "Show current tasks" if show_done_tasks else "Show done tasks" }}
         </a>
         <a href="/link-github" class="nav-button">Link GitHub</a>
+        <a href="{{ url_for('github_assignments') }}" class="nav-button">View Repos</a>
         <a href="{{ url_for('logout') }}" class="nav-button">Sign Out</a>
     </div>
 </div>
-
 
 <div class="main-container">
     <div class="calendar-container">

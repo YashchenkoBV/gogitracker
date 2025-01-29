@@ -7,7 +7,6 @@ from authlib.integrations.flask_client import OAuth
 import base64
 import re
 
-
 app = Flask(__name__)
 app.config.from_pyfile('keys/config.py')
 app.secret_key = app.config['SECRET_KEY']
@@ -114,7 +113,7 @@ def index():
     )
 
     for task in upcoming_tasks:
-        task.days_left = (task.date - now.date()).days
+        task.days_left = (task.date - now.date()).days + 1
 
     return render_template(
         "index.html",
@@ -129,8 +128,6 @@ def index():
         now=now,
         show_done_tasks=show_done_tasks
     )
-
-
 
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -263,7 +260,6 @@ def mark_finished():
     return redirect(url_for('index', year=year, month=month, show_done=show_done_tasks))
 
 
-
 @app.route('/link-github', methods=['GET', 'POST'])
 def link_github():
     """
@@ -307,7 +303,6 @@ def github_login():
     return redirect(url_for('link_github'))
 
 
-
 @app.route('/github-callback')
 def github_callback():
     """
@@ -328,7 +323,6 @@ def github_callback():
 
     # Redirect to the GitHub assignments page
     return redirect(url_for('github_assignments'))
-
 
 
 @app.route('/github-assignments')
@@ -394,6 +388,34 @@ def github_assignments():
         assignments_with_deadlines=assignments_with_deadlines,
         other_projects=other_projects
     )
+
+
+@app.route('/rep_date/<repo_name>', methods=['GET'])
+def rep_date(repo_name):
+    """
+    Page to enter a date for adding a repository as a task.
+    """
+    return render_template('rep_date.html', repo_name=repo_name)
+
+
+@app.route('/add_repo_task/<repo_name>', methods=['POST'])
+def add_repo_task(repo_name):
+    """
+    Add a repository as a task to the calendar.
+    """
+    user = current_user()
+    if not user:
+        return redirect(url_for('login'))
+
+    task_date_str = request.form.get('task_date')
+    task_date = datetime.strptime(task_date_str, '%Y-%m-%d').date()
+
+    # Add the repository as a task (only the repo name)
+    new_task = Task(user_id=user.id, date=task_date, task_text=repo_name)
+    db.session.add(new_task)
+    db.session.commit()
+
+    return redirect(url_for('index'))
 
 
 if __name__ == '__main__':

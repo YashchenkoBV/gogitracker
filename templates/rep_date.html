@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Link GitHub</title>
+    <title>Add Repository Task</title>
     <style>
         body {
             margin: 0;
@@ -105,11 +105,11 @@
     </div>
 
     <div class="form-container">
-        <h1>Link Your GitHub</h1>
-        <form action="/link-github" method="POST">
-            <input type="text" name="github_client_id" placeholder="GitHub Client ID" required>
-            <input type="text" name="github_client_secret" placeholder="GitHub Client Secret" required>
-            <button type="submit">Submit</button>
+        <h1>Add Repository Task</h1>
+        <form action="{{ url_for('add_repo_task', repo_name=repo_name) }}" method="POST">
+            <label for="task_date">Enter the date for the task (YYYY-MM-DD):</label>
+            <input type="date" id="task_date" name="task_date" required>
+            <button type="submit">Add Task</button>
         </form>
     </div>
 </body>
