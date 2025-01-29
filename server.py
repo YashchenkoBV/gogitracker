@@ -6,6 +6,42 @@ from datetime import datetime, date
 from authlib.integrations.flask_client import OAuth
 import base64
 import re
+import logging
+
+# Singleton Logger Class
+class SingletonLogger:
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super(SingletonLogger, cls).__new__(cls)
+            cls._instance.logger = logging.getLogger("GoGiTracker")
+            cls._instance.logger.setLevel(logging.DEBUG)  # Set the base logging level
+
+            # Create a file handler
+            file_handler = logging.FileHandler("gogitracker.log")
+            file_handler.setLevel(logging.DEBUG)
+
+            # Create a console handler
+            console_handler = logging.StreamHandler()
+            console_handler.setLevel(logging.INFO)
+
+            # Create a logging format
+            formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+            file_handler.setFormatter(formatter)
+            console_handler.setFormatter(formatter)
+
+            # Add the handlers to the logger
+            cls._instance.logger.addHandler(file_handler)
+            cls._instance.logger.addHandler(console_handler)
+        return cls._instance
+
+    def get_logger(self):
+        return self.logger
+
+
+# Initialize the Singleton Logger
+logger = SingletonLogger().get_logger()
 
 app = Flask(__name__)
 app.config.from_pyfile('keys/config.py')
@@ -27,7 +63,6 @@ github = oauth.register(
     client_kwargs={'scope': 'repo'},
 )
 
-
 # ------------------ Database Model ------------------
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -48,7 +83,11 @@ class Task(db.Model):
 
 # Create tables if they don't exist
 with app.app_context():
-    db.create_all()
+    try:
+        db.create_all()
+        logger.info("Database tables created successfully.")
+    except Exception as e:
+        logger.error(f"Error creating database tables: {e}")
 
 
 def current_user():
@@ -70,6 +109,7 @@ def is_past(year, month, day):
 @app.route('/')
 def index():
     if not current_user():
+        logger.info("User not logged in. Redirecting to welcome page.")
         return render_template("welcome.html")
 
     user = current_user()
@@ -115,6 +155,7 @@ def index():
     for task in upcoming_tasks:
         task.days_left = (task.date - now.date()).days + 1
 
+    logger.info(f"Rendering index page for user: {user.username}")
     return render_template(
         "index.html",
         current_user=user,
@@ -143,6 +184,7 @@ def signup():
         # Check if username is already taken
         existing_user = User.query.filter_by(username=username).first()
         if existing_user:
+            logger.warning(f"Username '{username}' is already taken.")
             return render_template(
                 'signup.html',
                 current_user=current_user(),
@@ -151,6 +193,7 @@ def signup():
 
         # Validate password
         if len(password) < 8:
+            logger.warning("Password is too short.")
             return render_template(
                 'signup.html',
                 current_user=current_user(),
@@ -158,14 +201,22 @@ def signup():
             )
 
         # Hash the password and create a new user
-        hashed_password = generate_password_hash(password)
-        new_user = User(username=username, password_hash=hashed_password)
-        db.session.add(new_user)
-        db.session.commit()
+        try:
+            hashed_password = generate_password_hash(password)
+            new_user = User(username=username, password_hash=hashed_password)
+            db.session.add(new_user)
+            db.session.commit()
+            logger.info(f"New user created: {username}")
+            return redirect(url_for('login'))
+        except Exception as e:
+            logger.error(f"Error creating user: {e}")
+            return render_template(
+                'signup.html',
+                current_user=current_user(),
+                error_message="An error occurred while creating the user."
+            )
 
-        # Redirect to the login page instead of the main page
-        return redirect(url_for('login'))
-
+    logger.info("Rendering signup page.")
     return render_template('signup.html', current_user=current_user())
 
 
@@ -181,6 +232,7 @@ def login():
 
         user = User.query.filter_by(username=username).first()
         if not user or not check_password_hash(user.password_hash, password):
+            logger.warning(f"Failed login attempt for username: {username}")
             return render_template(
                 'login.html',
                 current_user=current_user(),
@@ -189,8 +241,10 @@ def login():
 
         # Log in the user
         session['user_id'] = user.id
+        logger.info(f"User logged in: {username}")
         return redirect(url_for('index'))
 
+    logger.info("Rendering login page.")
     return render_template('login.html', current_user=current_user())
 
 
@@ -199,6 +253,9 @@ def logout():
     """
     Log out the current user by clearing the session.
     """
+    user = current_user()
+    if user:
+        logger.info(f"User logged out: {user.username}")
     session.pop('user_id', None)
     return redirect(url_for('index'))
 
@@ -210,6 +267,7 @@ def tasks(year, month, day):
     Includes task status management.
     """
     if not current_user():
+        logger.warning("Unauthorized access to tasks page. Redirecting to login.")
         return redirect(url_for('login'))
 
     user = current_user()
@@ -219,15 +277,23 @@ def tasks(year, month, day):
         if 'task' in request.form:  # Add a new task
             task_text = request.form.get('task')
             if task_text:
-                new_task = Task(user_id=user.id, date=date, task_text=task_text)
-                db.session.add(new_task)
-                db.session.commit()
+                try:
+                    new_task = Task(user_id=user.id, date=date, task_text=task_text)
+                    db.session.add(new_task)
+                    db.session.commit()
+                    logger.info(f"New task added by user {user.username}: {task_text}")
+                except Exception as e:
+                    logger.error(f"Error adding task: {e}")
         elif 'task_id' in request.form:  # Update task status to "Done"
             task_id = request.form.get('task_id')
             task = Task.query.filter_by(id=task_id, user_id=user.id).first()
             if task:
-                task.status = "Done"
-                db.session.commit()
+                try:
+                    task.status = "Done"
+                    db.session.commit()
+                    logger.info(f"Task marked as done by user {user.username}: {task.task_text}")
+                except Exception as e:
+                    logger.error(f"Error updating task status: {e}")
 
         return redirect(url_for('tasks', year=year, month=month, day=day))
 
@@ -235,6 +301,7 @@ def tasks(year, month, day):
     tasks_in_progress = Task.query.filter_by(user_id=user.id, date=date, status="In Progress").all()
     done_tasks = Task.query.filter_by(user_id=user.id, date=date, status="Done").all()
 
+    logger.info(f"Rendering tasks page for user {user.username} on {date}.")
     return render_template(
         'tasks.html',
         year=year,
@@ -254,8 +321,12 @@ def mark_finished():
 
     task = Task.query.get(task_id)
     if task and task.user_id == session['user_id']:
-        task.status = "Done"
-        db.session.commit()
+        try:
+            task.status = "Done"
+            db.session.commit()
+            logger.info(f"Task marked as finished by user {current_user().username}: {task.task_text}")
+        except Exception as e:
+            logger.error(f"Error marking task as finished: {e}")
 
     return redirect(url_for('index', year=year, month=month, show_done=show_done_tasks))
 
@@ -267,15 +338,21 @@ def link_github():
     """
     user = current_user()
     if not user:
+        logger.warning("Unauthorized access to link-github page. Redirecting to login.")
         return redirect(url_for('login'))
     if request.method == 'POST':
         github_client_id = request.form.get('github_client_id')
         github_client_secret = request.form.get('github_client_secret')
         if github_client_id and github_client_secret:
-            user.github_client_id = github_client_id
-            user.github_client_secret = github_client_secret
-            db.session.commit()
-            return redirect(url_for('github_login'))
+            try:
+                user.github_client_id = github_client_id
+                user.github_client_secret = github_client_secret
+                db.session.commit()
+                logger.info(f"GitHub credentials updated for user {user.username}.")
+                return redirect(url_for('github_login'))
+            except Exception as e:
+                logger.error(f"Error updating GitHub credentials: {e}")
+    logger.info("Rendering link-github page.")
     return render_template('link_github.html')
 
 
@@ -286,6 +363,7 @@ def github_login():
     """
     user = current_user()
     if not user:
+        logger.warning("Unauthorized access to github-login page. Redirecting to login.")
         return redirect(url_for('login'))
 
     if user.github_client_id and user.github_client_secret:
@@ -294,12 +372,14 @@ def github_login():
         github.client_secret = user.github_client_secret
 
         # Redirect to GitHub's OAuth login page
+        logger.info(f"Redirecting user {user.username} to GitHub OAuth login.")
         return github.authorize_redirect(
             url_for('github_callback', _external=True),
             prompt='consent'  # Always prompt the user for GitHub authentication
         )
 
     # Redirect to link_github.html if credentials are missing
+    logger.warning("GitHub credentials missing. Redirecting to link-github page.")
     return redirect(url_for('link_github'))
 
 
@@ -310,16 +390,22 @@ def github_callback():
     """
     user = current_user()
     if not user:
+        logger.warning("Unauthorized access to github-callback page. Redirecting to login.")
         return redirect(url_for('login'))
 
     # Get the OAuth token from GitHub
     token = github.authorize_access_token()
     if not token:
+        logger.error("Failed to retrieve OAuth token from GitHub.")
         return redirect(url_for('index'))
 
     # Save the OAuth token in the user's database record
-    user.github_token = token['access_token']
-    db.session.commit()
+    try:
+        user.github_token = token['access_token']
+        db.session.commit()
+        logger.info(f"GitHub token saved for user {user.username}.")
+    except Exception as e:
+        logger.error(f"Error saving GitHub token: {e}")
 
     # Redirect to the GitHub assignments page
     return redirect(url_for('github_assignments'))
@@ -334,12 +420,18 @@ def github_assignments():
     """
     user = current_user()
     if not user or not user.github_token:
+        logger.warning("Unauthorized access to github-assignments page. Redirecting to github-login.")
         return redirect(url_for('github_login'))
 
     github.token = {'access_token': user.github_token}
 
     # Fetch the user's repositories
-    repos = github.get('/user/repos').json()
+    try:
+        repos = github.get('/user/repos').json()
+        logger.info(f"Fetched GitHub repositories for user {user.username}.")
+    except Exception as e:
+        logger.error(f"Error fetching GitHub repositories: {e}")
+        return render_template('error.html', error_message="Failed to fetch GitHub repositories.")
 
     # Categorize repositories
     assignments_with_deadlines = []
@@ -373,16 +465,21 @@ def github_assignments():
                         'github_url': repo['html_url'],
                         'classroom_url': assignment_url
                     })
+                    logger.debug(f"Repository '{repo_name}' has a Classroom deadline link.")
                 else:
                     # No Classroom button link found
                     other_projects.append({'name': repo_name, 'url': repo['html_url']})
+                    logger.debug(f"Repository '{repo_name}' has no Classroom deadline link.")
             else:
                 # README could not be fetched
                 other_projects.append({'name': repo_name, 'url': repo['html_url']})
+                logger.debug(f"Repository '{repo_name}' has no Classroom deadline link.")
         except Exception as e:
             # Handle any unexpected errors when processing the repository
             other_projects.append({'name': repo_name, 'url': repo['html_url'], 'error': str(e)})
+            logger.error(f"Error processing repository '{repo_name}': {e}")
 
+    logger.info(f"Successfully categorized repositories for user {user.username}.")
     return render_template(
         'github_assignments.html',
         assignments_with_deadlines=assignments_with_deadlines,
