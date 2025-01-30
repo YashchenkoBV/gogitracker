@@ -10,8 +10,10 @@ A flask-based task-tracker, which provides tools for effective task management w
 supports linking GitHub as an external platform to add tasks from there directly to the calendar.
 
 ## Video
-
-
+By the link below, please find the demostration of how the applictaion works:
+```
+https://youtu.be/AduSZlzVGfA
+```
 
 ## Setup
 
@@ -47,6 +49,14 @@ $env:PYTHONPATH="." ; pytest tests/ --disable-warnings
 ```bash
 flask --app app/server.py run
 ```
+
+## Linking GitHub
+To link GitHub to the web application, got to your GitHub profile > Setting > Developer Settings > OAuth apps and provide urls for homepage and authorization callback:
+```
+https://flask-project-yashchenkobv-production-0ec4.up.railway.app
+https://flask-project-yashchenkobv-production-0ec4.up.railway.app/github-callback
+```
+Then enter Client ID and Client t Secret
 
 ## Requirements
 
