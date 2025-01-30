@@ -1,85 +1,129 @@
-# Calendar Application Routes
+# GoGiTracker API Documentation
 
 ## **Authentication**
-### `/signup` (GET)  
-- **Shows**: A registration form.  
-- **Actions**: Register as a new user.  
-- **Elements**:  
-  - Input fields: username, email, password.  
-  - Submit button.  
+### `GET /signup`
+- **Displays**: Registration form.
+- **Purpose**: Register a new user.
+- **Elements**:
+  - Input fields: `username`, `password`
+  - Submit button.
 
-### `/signup` (POST)  
-- **Processes**: Registration form submission. Creates a new user in the database.  
-
-### `/signin` (GET)  
-- **Shows**: A login form.  
-- **Actions**: Log in to the app.  
-- **Elements**:  
-  - Input fields: email, password.  
-  - Submit button.  
-
-### `/signin` (POST)  
-- **Processes**: Login form submission. Authenticates the user.  
-
-### `/logout` (POST)  
-- **Processes**: Logs the user out.  
+### `POST /signup`
+- **Processes**: User registration.
+- **Action**: Creates a new user in the database.
 
 ---
 
-## **Calendar**
-### `/calendar` (GET)  
-- **Shows**: A calendar with tasks and deadlines.  
-- **Actions**:  
-  - View tasks and deadlines.  
-  - Navigate between months.  
-- **Elements**:  
-  - Calendar grid.  
-  - Navigation buttons (previous/next month).  
+### `GET /login`
+- **Displays**: Login form.
+- **Purpose**: Authenticate and log in a user.
+- **Elements**:
+  - Input fields: `username`, `password`
+  - Submit button.
 
-### `/calendar/add` (GET)  
-- **Shows**: A form for adding a custom task.  
-- **Actions**: Add a new task to the calendar.  
-- **Elements**:  
-  - Input fields: task title, date, description.  
-  - Submit button.  
-
-### `/calendar/add` (POST)  
-- **Processes**: Form submission to add a custom task.  
-
-### `/calendar/task/<id>` (GET)  
-- **Shows**: Details of a specific task.  
-- **Actions**: Edit or delete the task.  
-- **Elements**:  
-  - Buttons: "Edit Task," "Delete Task."  
-
-### `/calendar/task/<id>/edit` (GET)  
-- **Shows**: A form for editing task details.  
-- **Actions**: Modify task details.  
-- **Elements**:  
-  - Pre-filled input fields: task title, date, description.  
-  - Submit button.  
-
-### `/calendar/task/<id>/edit` (POST)  
-- **Processes**: Updates the task with the edited details.  
-
-### `/calendar/task/<id>/delete` (POST)  
-- **Processes**: Deletes the selected task.  
+### `POST /login`
+- **Processes**: User login.
+- **Action**: Verifies user credentials and starts a session.
 
 ---
 
-## **Integration**
-### `/integrations/cogniterra` (GET)  
-- **Shows**: Button to authorize Cogniterra.  
-- **Actions**: Start the Cogniterra authorization process.  
-- **Elements**: "Authorize with Cogniterra" button.  
+### `GET /logout`
+- **Action**: Logs the user out and clears the session.
+- **Redirects**: To the home page (`/`).
 
-### `/integrations/github` (GET)  
-- **Shows**: Button to authorize GitHub Classroom.  
-- **Actions**: Start the GitHub authorization process.  
-- **Elements**: "Authorize with GitHub" button.  
+---
 
-### `/integrations/cogniterra/callback` (POST)  
-- **Processes**: Callback from Cogniterra API to fetch deadlines.  
+## **Task & Calendar Management**
+### `GET /`
+- **Displays**: User's **calendar** and upcoming **tasks**.
+- **Features**:
+  - View **tasks** sorted by date.
+  - Navigate **calendar months**.
+  - Toggle between **completed & pending tasks**.
+- **Query Parameters**:
+  - `year` (optional, integer) → Default: Current Year.
+  - `month` (optional, integer) → Default: Current Month.
+  - `show_done` (optional, boolean) → Default: `false` (shows only "In Progress" tasks).
 
-### `/integrations/github/callback` (POST)  
-- **Processes**: Callback from GitHub API to fetch assignments.  
+---
+
+### `GET /tasks/<year>/<month>/<day>`
+- **Displays**: Tasks for a specific date.
+- **Actions**:
+  - View **tasks**.
+  - **Add new tasks**.
+  - **Mark tasks as completed**.
+- **Elements**:
+  - Task list (separated into **"In Progress"** and **"Done"**).
+  - Input form to add a task.
+
+---
+
+### `POST /tasks/<year>/<month>/<day>`
+- **Processes**:
+  - Adds a **new task**.
+  - Marks an **existing task as completed**.
+
+---
+
+### `POST /mark_finished`
+- **Action**: Marks a task as **"Done"**.
+- **Redirects**: Back to the main page.
+
+---
+
+## **GitHub Integration**
+### `GET /link-github`
+- **Displays**: A form where users **input their GitHub OAuth Client ID & Secret**.
+- **Purpose**: Set up GitHub authentication credentials.
+
+---
+
+### `POST /link-github`
+- **Processes**:
+  - Stores the **GitHub Client ID & Secret** in the user's profile.
+  - Redirects the user to **GitHub OAuth login**.
+
+---
+
+### `GET /github-login`
+- **Redirects**:
+  - If **GitHub credentials are stored** → Directly sends the user to **GitHub OAuth login**.
+  - If **GitHub credentials are missing** → Redirects to `/link-github` to collect them.
+- **Triggers GitHub Authentication** using `prompt=consent` to always require re-authentication.
+
+---
+
+### `GET /github-callback`
+- **Processes GitHub OAuth Response**:
+  - Stores the **GitHub Access Token**.
+  - Redirects the user to `/github-assignments`.
+
+---
+
+### `GET /github-assignments`
+- **Displays**: **Two columns** of repositories:
+  1. **Assignments with deadlines** (includes **"Review Deadline"** link).
+  2. **Other projects**.
+- **Uses GitHub API** to:
+  - Fetch the user's **repositories**.
+  - Identify repositories that have **GitHub Classroom assignment deadlines**.
+
+---
+
+### `GET /rep_date/<repo_name>`
+- **Displays**: A form to **schedule** a repository as a task.
+- **Elements**:
+  - Input field: **Task due date**.
+  - Submit button.
+
+---
+
+### `POST /add_repo_task/<repo_name>`
+- **Processes**:
+  - Converts a **GitHub repository** into a **calendar task**.
+  - Saves the repository name as a task in the database.
+- **Redirects**: Back to `/`.
+
+---
+ 
