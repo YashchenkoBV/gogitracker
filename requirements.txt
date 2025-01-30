@@ -4,3 +4,4 @@ sqlalchemy==1.4.46
 werkzeug>=3.0.0
 authlib
 requests
+flasgger
