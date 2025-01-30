@@ -667,7 +667,6 @@ def github_login():
           text/html:
             example: "<html><body>Error: GitHub credentials not found</body></html>"
     """
-
     user = current_user()
     if not user:
         logger.warning("Unauthorized access to github-login page. Redirecting to login.")
@@ -679,12 +678,16 @@ def github_login():
             github.client_id = user.github_client_id
             github.client_secret = user.github_client_secret
 
+            # Determine the correct redirect URI based on environment
+            if "railway.app" in request.host_url:
+                redirect_uri = "https://flask-project-yashchenkobv-production-0ec4.up.railway.app/github-callback"
+            else:
+                redirect_uri = url_for('github_callback', _external=True)
+
             # Redirect to GitHub's OAuth login page
             logger.info(f"Redirecting user {user.username} to GitHub OAuth login.")
-            return github.authorize_redirect(
-                url_for('github_callback', _external=True),
-                prompt='consent'  # Always prompt the user for GitHub authentication
-            ), 302
+            return github.authorize_redirect(redirect_uri, prompt='consent'), 302
+
         except Exception as e:
             logger.error(f"Error initiating GitHub OAuth redirect: {e}")
             return redirect(url_for('link_github')), 400
@@ -692,6 +695,7 @@ def github_login():
     # Redirect to link_github.html if credentials are missing
     logger.warning("GitHub credentials missing. Redirecting to link-github page.")
     return redirect(url_for('link_github')), 400
+
 
 
 @app.route('/github-callback')
