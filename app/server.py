@@ -159,11 +159,15 @@ def index():
     month_days = calendar.monthcalendar(year, month)
     month_name = calendar.month_name[month]
 
-    # Check if the user wants to view done tasks
+    # Fix: Ensure show_done persists when switching months
     show_done_tasks = request.args.get("show_done", "false").lower() == "true"
-    task_status = "Done" if show_done_tasks else "In Progress"
+
+    # Fix: Pass 'show_done' as a query param when switching months
+    previous_month = f"/?year={year if month > 1 else year - 1}&month={month - 1 if month > 1 else 12}&show_done={'true' if show_done_tasks else 'false'}"
+    next_month = f"/?year={year if month < 12 else year + 1}&month={month + 1 if month < 12 else 1}&show_done={'true' if show_done_tasks else 'false'}"
 
     # Fetch tasks grouped by date based on selected status
+    task_status = "Done" if show_done_tasks else "In Progress"
     tasks_by_date = {}
 
     if show_done_tasks:
@@ -202,12 +206,15 @@ def index():
         month=month,
         month_name=month_name,
         month_days=month_days,
-        tasks_by_date=tasks_by_date,  # Ensures done tasks appear for past dates
+        tasks_by_date=tasks_by_date,  # Fix: Ensures done tasks appear for past dates
         upcoming_tasks=upcoming_tasks,
-        is_past=is_past,
+        is_past=is_past,  # Fix: Ensure is_past is passed to Jinja
         now=now,
-        show_done_tasks=show_done_tasks
+        show_done_tasks=show_done_tasks,
+        previous_month=previous_month,  # Fix: Include prev/next month links with show_done state
+        next_month=next_month
     ), 200
+
 
 
 @app.route('/signup', methods=['GET', 'POST'])
