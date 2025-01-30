@@ -210,9 +210,6 @@ def index():
     ), 200
 
 
-
-
-
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     """
@@ -308,8 +305,6 @@ def signup():
     return render_template('signup.html', current_user=current_user()), 200
 
 
-
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     """
@@ -379,7 +374,6 @@ def login():
     return render_template('login.html', current_user=current_user()), 200
 
 
-
 @app.route('/logout')
 def logout():
     """
@@ -389,7 +383,7 @@ def logout():
     if user:
         logger.info(f"User logged out: {user.username}")
     session.pop('user_id', None)
-    return redirect(url_for('index'))
+    return redirect(url_for('index')), 200
 
 
 @app.route('/tasks/<int:year>/<int:month>/<int:day>', methods=['GET', 'POST'])
