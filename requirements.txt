@@ -5,3 +5,4 @@ werkzeug>=3.0.0
 authlib
 requests
 flasgger
+pytest
