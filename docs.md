@@ -1,4 +1,4 @@
-# GoGiTracker Documentation
+# GoGiTracker API Documentation
 
 ## **Authentication**
 ### `GET /signup`
